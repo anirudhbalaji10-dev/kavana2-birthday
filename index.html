@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday — Kavana</title>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+
+<style>
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:wght@400;700&display=swap');
+
+:root{
+  --bg:#F8F8FF;
+  --pink:#FF1493;
+  --deep-pink:#FF69B4;
+  --gold:#FFD700;
+}
+
+/* Basic reset */
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:"Playfair Display",serif;
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  color:#222;
+}
+
+/* Utility */
+.hidden{display:none !important}
+
+/* PRELOADER */
+#preloader{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#FFC0CB,#FFD6E8);
+  cursor:pointer;
+  text-align:center;
+  z-index:1000;
+}
+.preloader-text{font-family:'Dancing Script',cursive;font-size:4.2rem;color:var(--pink);margin:0}
+.candle-emoji{font-size:5rem;margin:14px 0}
+.preloader-subtext{font-size:0.95rem;color:#8B008B;margin-top:6px}
+
+/* flame (decorative) */
+.candle-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.flame{
+  position:absolute;top:-36px;left:50%;transform:translateX(-50%);
+  width:28px;height:44px;border-radius:50% 50% 40% 40%;
+  background: radial-gradient(circle at 35% 30%, #FFD27A 0 30%, transparent 31%), linear-gradient(180deg,#FFD700,#FF7A7A);
+  filter:blur(0.4px);
+  animation: flameFlicker 700ms infinite;
+  transform-origin:center bottom;
+}
+@keyframes flameFlicker{
+  0%{transform:translateX(-50%) scaleY(1) rotate(0)}50%{transform:translateX(-50%) scaleY(0.92) rotate(-2deg)}100%{transform:translateX(-50%) scaleY(1) rotate(2deg)}
+}
+
+/* fade out */
+#preloader.fade-out{animation:fadeAway .85s forwards}
+@keyframes fadeAway{to{opacity:0;visibility:hidden}}
+
+/* MAIN CONTENT */
+#main-content{max-width:980px;margin:20px auto;padding:14px}
+.header{text-align:center;margin-bottom:14px}
+.header h1{font-family:'Dancing Script',cursive;color:var(--deep-pink);font-size:2.6rem;margin:6px 0}
+.message{color:#666;margin:0 0 10px 0}
+
+/* CARD */
+.card{
+  background:#fff;border-radius:12px;padding:14px;margin:14px auto;max-width:760px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.10);cursor:pointer;border-top:5px solid var(--gold);
+}
+.card h3{color:var(--pink);margin:0 0 6px 0}
+.card p{margin:6px 0 0 0;color:#555}
+
+/* reveal content */
+.reveal-content{
+  max-height:0;opacity:0;overflow:hidden;transition:max-height .55s ease,opacity .45s ease;
+}
+.reveal-content.show{max-height:2000px;opacity:1}
+
+/* GALLERY */
+.slideshow{position:relative}
+.slideshow img{width:100%;display:none;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.06)}
+.slideshow img.active{display:block}
+
+/* controls */
+.controls{display:flex;gap:8px;justify-content:center;padding:10px 0}
+.controls button{padding:8px 10px;border-radius:8px;border:0;background:var(--pink);color:#fff;cursor:pointer}
+
+/* popup */
+.popup{position:fixed;left:50%;top:16%;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#FFF7FB);padding:16px;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,0.18);z-index:1500;display:none;max-width:92%}
+.popup.show{display:block}
+
+/* heart canvas above content */
+#heartCanvas{position:fixed;inset:0;pointer-events:none;z-index:1400}
+
+/* responsive */
+@media (max-width:520px){
+  .preloader-text{font-size:2.4rem}
+  .candle-emoji{font-size:3.2rem}
+  .header h1{font-size:1.9rem}
+  .card{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- PRELOADER: tap to reveal -->
+<div id="preloader" onclick="blowCandle()" role="button" aria-label="Blow the candle to reveal the page">
+  <p class="preloader-text">Make a Wish!</p>
+  <div class="candle-wrap" aria-hidden="true">
+    <span class="candle-emoji">🕯️</span>
+    <div class="flame"></div>
+  </div>
+  <p class="preloader-subtext">(Tap to 'Blow out' the Candle and Reveal Your Surprise)</p>
+</div>
+
+<!-- MAIN -->
+<div id="main-content" class="hidden" aria-live="polite">
+  <div class="header">
+    <h1>Happy Birthday, Kavana! 🎉</h1>
+    <p class="message">This website was crafted just for you — a little celebration of our favorite moments.</p>
+  </div>
+
+  <!-- Photo Gallery -->
+  <div class="card" onclick="toggleReveal(this)">
+    <h3>📸 Photo Gallery</h3>
+    <p>Tap to reveal your photos.</p>
+
+    <div class="reveal-content hidden" aria-hidden="true">
+      <div class="slideshow" id="gallery-slideshow" style="min-height:160px;">
+        <!-- Images loaded from secure HTTPS hosts; replace with your own repo-relative paths if you prefer -->
+        <img src="https://i.ibb.co/8g4hJVTL/IMG-20251028-065126.jpg" alt="photo1">
+        <img src="https://i.ibb.co/ym7gxmtt/IMG-20251003-WA0001.jpg" alt="photo2">
+        <img src="https://i.ibb.co/KxVQt3WF/IMG-20251023-212656.jpg" alt="photo3">
+      </div>
+
+      <div class="controls" onclick="event.stopPropagation()">
+        <button onclick="prevSlide(event)">Prev</button>
+        <button onclick="nextSlide(event)">Next</button>
+        <button onclick="toggleAutoSlide(event)">Auto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Card -->
+  <div class="card" onclick="toggleReveal(this)">
+    <h3>💌 A Message Just For You</h3>
+    <p>Tap to reveal the message.</p>
+
+    <div class="reveal-content hidden" aria-hidden="true">
+      <h4>Hi Kavana,</h4>
+      <p>Happy Birthday, Kavana! <br>
+
+            I wanted to dedicate this little space just for you because you truly deserve a day filled with joy and light. <br>
+
+            You have a way of making things around you feel calmer and brighter. <br>
+
+            Your smile is something people remember,<br>
+
+            your kindness is something people feel, <br>
+
+            and your presence always adds a lightness to every moment. <br>
+
+            On your special day, I hope you laugh a little louder,
+
+            smile a little wider,<br>
+
+            and celebrate every good thing that’s coming your way.<br>
+
+            May this year bring you new experiences, good people,
+
+            and moments that become beautiful memories.<br>
+
+            Stay happy, stay confident, and keep being the wonderful person you are. <br>
+    </div>
+  </div>
+</div>
+
+<!-- Surprise popup -->
+<div id="birthdayPopup" class="popup" role="dialog" aria-modal="true" aria-hidden="true">
+  <h4>Surprise!</h4>
+  <p>Wishing you a year full of joy and dreams fulfilled. Much love!</p>
+  <div style="text-align:right;margin-top:8px"><button onclick="closePopup()">Close</button></div>
+</div>
+
+<!-- heart effects canvas -->
+<canvas id="heartCanvas" aria-hidden="true"></canvas>
+
+<script>
+/* ----------------- Helper ----------------- */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+/* ----------------- Preloader / Candle ----------------- */
+function blowCandle(){
+  const pre = $('#preloader');
+  const main = $('#main-content');
+  const popup = $('#birthdayPopup');
+
+  // hide decorative flame immediately
+  const flame = pre.querySelector('.flame');
+  if(flame) flame.style.display = 'none';
+
+  // fade out preloader and reveal main
+  pre.classList.add('fade-out');
+  setTimeout(() => {
+    pre.style.display = 'none';
+    main.classList.remove('hidden');
+    if(popup) popup.classList.add('show');
+
+    // confetti & hearts for celebration
+    if(typeof confetti === 'function') confetti({ particleCount: 220, spread: 100, origin: { y: 0.6 } });
+    launchHearts(18);
+  }, 800);
+}
+
+function closePopup(){
+  const p = $('#birthdayPopup');
+  if(p) p.classList.remove('show');
+}
+
+/* ----------------- Reveal toggle ----------------- */
+function toggleReveal(card){
+  const evt = window.event || {};
+  if(evt.target && evt.target.tagName === 'BUTTON') return; // don't toggle when interacting with inner controls
+
+  const content = card.querySelector('.reveal-content');
+  if(!content) return;
+
+  const isOpen = content.classList.contains('show');
+  if(isOpen){
+    content.classList.remove('show');
+    // add hidden after CSS transition completes
+    setTimeout(()=> { if(!content.classList.contains('show')) content.classList.add('hidden'); }, 500);
+  } else {
+    content.classList.remove('hidden');
+    // ensure transition runs
+    void content.offsetWidth;
+    content.classList.add('show');
+
+    // celebration visual
+    if(typeof confetti === 'function') confetti({ particleCount: 100, spread: 60, origin: { y: 0.4 } });
+    launchHearts(8);
+
+    // start slideshow if this card has the gallery
+    if(card.querySelector('#gallery-slideshow')) setTimeout(()=> startSlideshow(), 140);
+  }
+}
+
+/* ----------------- Slideshow ----------------- */
+const gallery = document.getElementById('gallery-slideshow');
+let slideIndex = 0;
+let slideTimer = null;
+let autoSlide = false;
+let slideshowStarted = false;
+
+function showSlide(n){
+  const gallery = document.getElementById('gallery-slideshow');
+  if(!gallery) return;
+  const imgs = gallery.querySelectorAll('img');
+  if(!imgs.length) return;
+
+  imgs.forEach(i => i.classList.remove('active'));
+  slideIndex = (n + imgs.length) % imgs.length;
+  const active = imgs[slideIndex];
+  active.classList.add('active');
+
+  // set a reasonable min-height so layout doesn't collapse while images load
+  if(active.complete && active.naturalHeight) {
+    gallery.style.minHeight = active.naturalHeight + 'px';
+  } else {
+    gallery.style.minHeight = '180px';
+    active.addEventListener('load', ()=> { gallery.style.minHeight = active.naturalHeight + 'px'; }, { once: true });
+  }
+}
+
+function nextSlide(e){ if(e) e.stopPropagation(); showSlide(slideIndex + 1); }
+function prevSlide(e){ if(e) e.stopPropagation(); showSlide(slideIndex - 1); }
+
+function startSlideshow(){
+  if(slideshowStarted) return;
+  slideshowStarted = true;
+  showSlide(0);
+  // do not auto-run unless user toggles Auto
+}
+
+function toggleAutoSlide(e){
+  if(e) e.stopPropagation();
+  if(slideTimer){ clearInterval(slideTimer); slideTimer = null; autoSlide = false; return; }
+  slideTimer = setInterval(()=> showSlide(slideIndex + 1), 3000);
+  autoSlide = true;
+}
+
+/* ----------------- Heart particles (canvas) ----------------- */
+const heartCanvas = document.getElementById('heartCanvas');
+const hctx = heartCanvas.getContext('2d');
+let hearts = [];
+
+function resizeCanvas(){ heartCanvas.width = window.innerWidth; heartCanvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
+function makeHeart(x,y,scale,dx,dy,life,color){
+  hearts.push({x,y,scale,dx,dy,life,age:0,color});
+}
+
+function launchHearts(count){
+  for(let i=0;i<count;i++){
+    const x = rand(window.innerWidth*0.15, window.innerWidth*0.85);
+    const y = rand(window.innerHeight*0.2, window.innerHeight*0.6);
+    const s = rand(0.6,1.4);
+    const dx = rand(-0.6,0.6);
+    const dy = rand(-2.2,-0.6);
+    const life = rand(80,160);
+    const color = `hsl(${rand(320,360)},80%,60%)`;
+    makeHeart(x,y,s,dx,dy,life,color);
+  }
+}
+
+function drawHeartShape(ctx,x,y,size,fillStyle){
+  ctx.save(); ctx.translate(x,y); ctx.scale(size,size);
+  ctx.beginPath(); ctx.moveTo(0,-8);
+  ctx.bezierCurveTo(8,-24,40,-24,40,0);
+  ctx.bezierCurveTo(40,20,20,34,0,52);
+  ctx.bezierCurveTo(-20,34,-40,20,-40,0);
+  ctx.bezierCurveTo(-40,-24,-8,-24,0,-8);
+  ctx.closePath(); ctx.fillStyle = fillStyle; ctx.fill(); ctx.restore();
+}
+
+function heartTick(){
+  hctx.clearRect(0,0,heartCanvas.width,heartCanvas.height);
+  for(let i=hearts.length-1;i>=0;i--){
+    const h = hearts[i]; h.age++;
+    h.x += h.dx; h.y += h.dy; h.dy += 0.03;
+    const alpha = 1 - (h.age/h.life);
+    if(alpha <= 0){ hearts.splice(i,1); continue; }
+    hctx.globalAlpha = alpha;
+    drawHeartShape(hctx,h.x,h.y,h.scale,h.color);
+    hctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(heartTick);
+}
+requestAnimationFrame(heartTick);
+
+/* ----------------- Initialization ----------------- */
+document.addEventListener('DOMContentLoaded', ()=> {
+  // Ensure gallery shows correctly if user inspects before interaction:
+  const galleryEl = document.getElementById('gallery-slideshow');
+  if(galleryEl){
+    // show first image when gallery element exists but keep it hidden until user opens the card
+    const imgs = galleryEl.querySelectorAll('img');
+    if(imgs.length) imgs[0].classList.add('active');
+  }
+
+  // gentle recurring heart bursts (light)
+  setInterval(()=> { launchHearts(2); }, 2500);
+
+  // Expose functions for inline onclick attributes
+  window.blowCandle = blowCandle;
+  window.toggleReveal = toggleReveal;
+  window.nextSlide = nextSlide;
+  window.prevSlide = prevSlide;
+  window.toggleAutoSlide = toggleAutoSlide;
+  window.closePopup = closePopup;
+  window.launchHearts = launchHearts;
+});
+</script>
+</body>
+</html>
