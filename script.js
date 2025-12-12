@@ -1,6 +1,5 @@
 // Function to launch confetti from different origins
 function launchConfetti(originX, color) {
-    // This function relies on the external canvas-confetti library loaded in index.html
     confetti({
         particleCount: 120,
         spread: 100,
@@ -23,28 +22,26 @@ function runImpressiveConfetti() {
     }, 800);
 }
 
-// --- Runs when the user "blows" the candle (taps preloader) ---
+// --- CORE FUNCTION: Executes the transition upon click on the pre-loader ---
 function blowCandle() {
-    // 1. Run the confetti animation
+    // 1. Start the visual celebration
     runImpressiveConfetti();
 
-    // 2. Hide the pre-loader and show the main content
+    // 2. Hide the pre-loader and show the main content after a slight delay
     setTimeout(() => {
         document.getElementById('preloader').classList.add('hidden');
         document.getElementById('main-content').classList.remove('hidden');
     }, 200);
 }
 
-// --- Toggles the visibility of the card content ---
+// --- Toggles the visibility of the card content (for photos and message) ---
 function toggleReveal(cardElement) {
-    // Select the content div and the hint paragraph within the clicked card
     const revealContent = cardElement.querySelector('.reveal-content');
     const hintParagraph = cardElement.querySelector('p:not(.reveal-content p)');
 
-    // Toggle the 'hidden' class to show/hide the content
     revealContent.classList.toggle('hidden');
 
-    // Update the text to guide the user
+    // Update the hint text
     if (revealContent.classList.contains('hidden')) {
         hintParagraph.textContent = "Tap to reveal! (Click me)";
         hintParagraph.style.opacity = '1';
