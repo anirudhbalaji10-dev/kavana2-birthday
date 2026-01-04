@@ -176,6 +176,13 @@ body{
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
+function startMusic(){
+  const music = document.getElementById("bgMusic");
+  if(music && music.paused){
+    music.play().catch(()=>{});
+  }
+}
+
 /* ----------------- Preloader / Candle ----------------- */
 function blowCandle(){
   const pre = $('#preloader');
@@ -196,6 +203,7 @@ function blowCandle(){
     // confetti & hearts for celebration
     if(typeof confetti === 'function') confetti({ particleCount: 220, spread: 100, origin: { y: 0.6 } });
     launchHearts(18);
+    startMusic();
   }, 800);
 }
 
@@ -352,5 +360,6 @@ document.addEventListener('DOMContentLoaded', ()=> {
   window.launchHearts = launchHearts;
 });
 </script>
+<audio id="bgMusic" src="ani3.mp3" loop></audio>
 </body>
 </html>
